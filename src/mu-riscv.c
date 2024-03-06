@@ -139,7 +139,7 @@ void rdump() {
 	printf("-------------------------------------\n");
 	printf("[Register]\t[Value]\n");
 	printf("-------------------------------------\n");
-	for (i = 0; i < RISCV_REGS; i++){
+	for (i = 0; i < MIPS_REGS; i++){
 		printf("[R%d]\t: 0x%08x\n", i, CURRENT_STATE.REGS[i]);
 	}
 	printf("-------------------------------------\n");
@@ -243,7 +243,7 @@ void handle_command() {
 void reset() {
 	int i;
 	/*reset registers*/
-	for (i = 0; i < RISCV_REGS; i++){
+	for (i = 0; i < MIPS_REGS; i++){
 		CURRENT_STATE.REGS[i] = 0;
 	}
 	CURRENT_STATE.HI = 0;
@@ -305,6 +305,41 @@ void load_program() {
 	fclose(fp);
 }
 
+static inline uint32_t rd_get(uint32_t instruction)
+{
+	return (instruction & 0xF80) >> 7;
+}
+
+static inline uint32_t funct3_get(uint32_t instruction)
+{
+	return (instruction & 0x7000) >> 12;
+}
+
+static inline uint32_t rs1_get(uint32_t instruction)
+{
+	return (instruction & 0xf8000) >> 15;
+}
+
+static inline uint32_t rs2_get(uint32_t instruction)
+{
+	return (instruction & 0x1f00000) >> 20;
+}
+
+static inline uint32_t funct7_get(uint32_t instruction)
+{
+	return (instruction & 0xfe000000) >> 25;
+}
+
+static inline uint32_t bigImm_get(uint32_t instruction)
+{
+	return (instruction & 0xfff00000) >> 20;
+}
+
+static inline uint32_t opcode_get(uint32_t instruction)
+{
+	return instruction & 0x7f;
+}
+
 /************************************************************/
 /* maintain the pipeline                                                                                           */
 /************************************************************/
@@ -341,6 +376,7 @@ void MEM()
 /************************************************************/
 void EX()
 {
+	EX_MEM.IR = ID_IF.IR;
 	/*IMPLEMENT THIS*/
 }
 
@@ -349,6 +385,14 @@ void EX()
 /************************************************************/
 void ID()
 {
+	ID_IF.IR = IF_EX.IR;
+	
+	uint32_t temp_inst = ID_IF.IR;
+	
+	ID_IF.A = rs1_get(temp_inst);
+	ID_IF.B = rs2_get(temp_inst);
+	ID_IF.imm = funct7_get(temp_inst);
+
 	/*IMPLEMENT THIS*/
 }
 
@@ -357,6 +401,10 @@ void ID()
 /************************************************************/
 void IF()
 {
+
+	IF_EX.IR = mem_read_32(CURRENT_STATE.PC);
+	IF_EX.PC = CURRENT_STATE.PC + 4;	
+
 	/*IMPLEMENT THIS*/
 }
 
