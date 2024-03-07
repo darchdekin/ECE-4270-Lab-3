@@ -360,7 +360,27 @@ void handle_pipeline()
 /************************************************************/
 void WB()
 {
-	/*IMPLEMENT THIS*/
+	int lmd = MEM_WB.LMD;
+	int alu = MEM_WB.ALUOutput;
+	int inst = MEM_WB.IR;
+	int opcode = opcode_get(inst);
+	int rd = rd_get(inst); //destination register
+
+	switch(opcode){
+		case 51:{ //register-register instruction
+			
+			NEXT_STATE.REGS[rd] = alu;
+			break;
+		}
+		case 19:{ //register-immediate instruction
+			NEXT_STATE.REGS[rd] = alu;
+			break;
+		}
+		case 3:{ //load instruction
+			NEXT_STATE.REGS[rd] = lmd;
+			break;
+		}
+	}
 }
 
 /************************************************************/
@@ -368,7 +388,21 @@ void WB()
 /************************************************************/
 void MEM()
 {
-	/*IMPLEMENT THIS*/
+	MEM_WB.IR = EX_MEM.IR;
+	MEM_WB.ALUOutput = EX_MEM.ALUOutput;
+
+	//look in IR register to determine if instruction is load or store
+	switch(opcode_get(EX_MEM.IR)){
+		case 3:{ //Load
+			//load: store mem[ALU output] in MEM_WB.LMD register
+			MEM_WB.LMD = mem_read_32(EX_MEM.ALUOutput);
+			break;
+		}
+		case 0x23:{ //Store
+			mem_write_32(EX_MEM.ALUOutput,  EX_MEM.B);
+			break;
+		}
+	}
 }
 
 /************************************************************/
