@@ -340,6 +340,43 @@ static inline uint32_t opcode_get(uint32_t instruction)
 	return instruction & 0x7f;
 }
 
+#define R_ARGS uint32_t rs1, uint32_t rs2
+#define I_ARGS uint32_t rs1, uint32_t imm
+#define S_ARGS uint32_t rs1, uint32_t rs2, uint32_t imm
+
+
+//***************** R TYPE INSTRUCTIONS **********************
+static inline uint32_t ADD(R_ARGS){return rs1 + rs2;}
+static inline uint32_t SUB(R_ARGS){return rs1 - rs2;}
+static inline uint32_t XOR(R_ARGS){return rs1 ^ rs2;}
+static inline uint32_t  OR(R_ARGS){return rs1 | rs2;}
+static inline uint32_t AND(R_ARGS){return rs1 & rs2;}
+static inline uint32_t SLL(R_ARGS){return rs1 << rs2;}
+static inline uint32_t SRL(R_ARGS){return rs1 >> rs2;}
+static inline uint32_t SRA(R_ARGS){return rs1 >> rs2;} //TODO: this is actually supposed to extend with the msb, I'll leave it unimplemened for now, but plan to do this later -Trevor
+static inline uint32_t SLT(R_ARGS){return (rs1 < rs2);}
+static inline uint32_t SLU(R_ARGS){return (rs1 < rs2);}//TODO: zero extends, leaving for now similar to last one. I figure these little things can be one of the last things we do - Trevor
+//***********************************************************
+//**************** I IMMEDIATE INSTRUCTIONS *****************
+static inline uint32_t ADDI(I_ARGS){return rs1 + imm;}
+static inline uint32_t XORI(I_ARGS){return rs1 ^ imm;}
+static inline uint32_t 	ORI(I_ARGS){return rs1 | imm;}
+static inline uint32_t ANDI(I_ARGS){return rs1 & imm;}
+static inline uint32_t SLLI(I_ARGS){return rs1 << imm;}
+static inline uint32_t SRLI(I_ARGS){return rs1 >> imm;}
+static inline uint32_t SRAI(I_ARGS){return rs1 >> imm;}//TODO: msb extends, also note to self to be careful with the upper immediate bits, might have to mess with those in the function, we'll see. it would make it so much less clean though TwT ...
+static inline uint32_t SLTI(I_ARGS){return rs1 < imm;}
+static inline uint32_t SLTIU(I_ARGS){return rs1 < imm;}//TODO: zero extends
+
+//*************** INSTRUCTION TABLES ************************
+static uint32_t (*R_MAP[10])(R_ARGS) = {ADD,SUB,SLT,SLU,XOR,SRL,SRA,OR,AND};
+static uint32_t (*IIMM_MAP[9])(I_ARGS) = {ADDI,SLLI,SLTI,SLTIU,XORI,SRLI,SRAI,ORI,ANDI};
+
+static uint32_t r_handler(uint32_t funct3, uint32_t funct7){return R_MAP[funct3 + (funct7 >> 6)](EX_MEM.A,EX_MEM.B);}
+static uint32_t iImm_handler(){return 0;}
+static uint32_t iL_handler(){return 0;}
+static uint32_t s_handler(){return 0;}
+
 /************************************************************/
 /* maintain the pipeline                                                                                           */
 /************************************************************/
@@ -377,7 +414,16 @@ void MEM()
 void EX()
 {
 	EX_MEM.IR = ID_IF.IR;
-	/*IMPLEMENT THIS*/
+
+	uint32_t opcode = opcode_get(EX_MEM.IR),funct3 = funct3_get(EX_MEM.IR);
+	switch(opcode)
+	{
+		case(0x03):
+			EX_MEM.ALUOutput = r_handler(funct3,EX_MEM.imm);
+			break;
+		default:
+			break;
+	}
 }
 
 /************************************************************/
