@@ -5,6 +5,7 @@
 #include <assert.h>
 
 #include "mu-riscv.h"
+#include "print_inst.h"
 
 /***************************************************************/
 /* Print out a list of commands available                                                                  */
@@ -457,7 +458,15 @@ void initialize() {
 /* Print the program loaded into memory (in RISCV assembly format)    */
 /************************************************************/
 void print_program(){
-	/*IMPLEMENT THIS*/
+	uint32_t temp_pc = MEM_TEXT_BEGIN, i = 0;
+
+	while(i < PROGRAM_SIZE){
+		uint32_t instruction = mem_read_32(temp_pc);
+		printf("%s\n", inst_to_string(instruction));
+		temp_pc += 4;
+		i++;
+		//exit loop at some point
+	}
 }
 
 /************************************************************/
