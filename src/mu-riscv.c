@@ -5,6 +5,7 @@
 #include <assert.h>
 
 #include "mu-riscv.h"
+#include "riscv_utils.h"
 #include "print_inst.h"
 
 /***************************************************************/
@@ -306,40 +307,6 @@ void load_program() {
 	fclose(fp);
 }
 
-static inline uint32_t rd_get(uint32_t instruction)
-{
-	return (instruction & 0xF80) >> 7;
-}
-
-static inline uint32_t funct3_get(uint32_t instruction)
-{
-	return (instruction & 0x7000) >> 12;
-}
-
-static inline uint32_t rs1_get(uint32_t instruction)
-{
-	return (instruction & 0xf8000) >> 15;
-}
-
-static inline uint32_t rs2_get(uint32_t instruction)
-{
-	return (instruction & 0x1f00000) >> 20;
-}
-
-static inline uint32_t funct7_get(uint32_t instruction)
-{
-	return (instruction & 0xfe000000) >> 25;
-}
-
-static inline uint32_t bigImm_get(uint32_t instruction)
-{
-	return (instruction & 0xfff00000) >> 20;
-}
-
-static inline uint32_t opcode_get(uint32_t instruction)
-{
-	return instruction & 0x7f;
-}
 
 #define R_ARGS uint32_t rs1, uint32_t rs2
 #define I_ARGS uint32_t rs1, uint32_t imm
@@ -357,7 +324,7 @@ static inline uint32_t SRL(R_ARGS){return rs1 >> rs2;}
 static inline uint32_t SRA(R_ARGS){return rs1 >> rs2;} //TODO: this is actually supposed to extend with the msb, I'll leave it unimplemened for now, but plan to do this later -Trevor
 static inline uint32_t SLT(R_ARGS){return (rs1 < rs2);}
 static inline uint32_t SLU(R_ARGS){return (rs1 < rs2);}//TODO: zero extends, leaving for now similar to last one. I figure these little things can be one of the last things we do - Trevor
-//***********************************************************
+
 //**************** I IMMEDIATE INSTRUCTIONS *****************
 static inline uint32_t ADDI(I_ARGS){return rs1 + imm;}
 static inline uint32_t XORI(I_ARGS){return rs1 ^ imm;}
@@ -368,6 +335,7 @@ static inline uint32_t SRLI(I_ARGS){return rs1 >> imm;}
 static inline uint32_t SRAI(I_ARGS){return rs1 >> imm;}//TODO: msb extends, also note to self to be careful with the upper immediate bits, might have to mess with those in the function, we'll see. it would make it so much less clean though TwT ...
 static inline uint32_t SLTI(I_ARGS){return rs1 < imm;}
 static inline uint32_t SLTIU(I_ARGS){return rs1 < imm;}//TODO: zero extends
+
 
 //*************** INSTRUCTION TABLES ************************
 static uint32_t (*R_MAP[10])(R_ARGS) = {ADD,SUB,SLT,SLU,XOR,SRL,SRA,OR,AND};

@@ -1,4 +1,8 @@
+#include <stdlib.h>
+#include <string.h>
+
 #include "print_inst.h"
+#include "riscv_utils.h"
 
 char* inst_to_string(uint32_t args){
 	uint8_t type = (uint8_t)(args & 0x3f);
