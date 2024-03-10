@@ -309,8 +309,8 @@ void load_program() {
 
 
 #define R_ARGS uint32_t rs1, uint32_t rs2
-#define I_ARGS uint32_t rs1, uint32_t imm
-#define S_ARGS uint32_t rs1, uint32_t rs2, uint32_t imm
+#define I_ARGS uint32_t rs1, int32_t imm
+#define S_ARGS uint32_t rs1, int32_t imm
 
 
 //***************** R TYPE INSTRUCTIONS **********************
@@ -337,14 +337,26 @@ static inline uint32_t SLTI(I_ARGS){return rs1 < imm;}
 static inline uint32_t SLTIU(I_ARGS){return rs1 < imm;}//TODO: zero extends
 
 
+//**************** LOAD INSTRUCTIONS ************************
+static inline uint32_t LOAD_GENERAL(I_ARGS){return rs1 + imm;}
+
+//**************** STORE INSTRUCTIONS ***********************
+static inline uint32_t STORE_GENERAL(S_ARGS){return rs1 + imm;}
+
 //*************** INSTRUCTION TABLES ************************
 static uint32_t (*R_MAP[10])(R_ARGS) = {ADD,SUB,SLT,SLU,XOR,SRL,SRA,OR,AND};
 static uint32_t (*IIMM_MAP[9])(I_ARGS) = {ADDI,SLLI,SLTI,SLTIU,XORI,SRLI,SRAI,ORI,ANDI};
 
+
+//*************** HANDLERS **********************************
 static uint32_t r_handler(uint32_t funct3, uint32_t funct7){return R_MAP[funct3 + (funct7 >> 6)](EX_MEM.A,EX_MEM.B);}
-static uint32_t iImm_handler(){return 0;}
-static uint32_t iL_handler(){return 0;}
-static uint32_t s_handler(){return 0;}
+static uint32_t iImm_handler(uint32_t funct3)
+{
+	uint8_t offset = ( (funct3 == 5) * (EX_MEM.imm >> 5)  ); //this is only here to handle srai
+	return IIMM_MAP[funct3+offset](EX_MEM.A,EX_MEM.imm);
+}
+static uint32_t iL_handler(){return LOAD_GENERAL(EX_MEM.A,EX_MEM.imm);}
+static uint32_t s_handler(){return STORE_GENERAL(EX_MEM.A,EX_MEM.imm);}
 
 /************************************************************/
 /* maintain the pipeline                                                                                           */
@@ -422,6 +434,15 @@ void EX()
 	switch(opcode)
 	{
 		case(0x03):
+			EX_MEM.ALUOutput = iL_handler();
+			break;
+		case(0x13):
+			EX_MEM.ALUOutput = iImm_handler(funct3);
+			break;
+		case(0x23):
+			EX_MEM.ALUOutput = s_handler();
+			break;
+		case(0x33):
 			EX_MEM.ALUOutput = r_handler(funct3,EX_MEM.imm);
 			break;
 		default:
