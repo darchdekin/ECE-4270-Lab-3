@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include <stdbool.h>
 #include <assert.h>
 
 #include "mu-riscv.h"
@@ -74,6 +75,7 @@ void cycle() {
 	handle_pipeline();
 	CURRENT_STATE = NEXT_STATE;
 	CYCLE_COUNT++;
+	if(CURRENT_STATE.PC > (PROGRAM_SIZE * 4) + MEM_TEXT_BEGIN) RUN_FLAG = false; 
 }
 
 /***************************************************************/
@@ -349,11 +351,11 @@ static uint32_t (*IIMM_MAP[9])(I_ARGS) = {ADDI,SLLI,SLTI,SLTIU,XORI,SRLI,SRAI,OR
 
 
 //*************** HANDLERS **********************************
-static uint32_t r_handler(uint32_t funct3, uint32_t funct7){return R_MAP[funct3 + (funct7 >> 6)](EX_MEM.A,EX_MEM.B);}
+static uint32_t r_handler(uint32_t funct3, uint32_t funct7){return R_MAP[funct3 + (funct3>5) + (funct7 >> 6)](EX_MEM.A,EX_MEM.B);}
 static uint32_t iImm_handler(uint32_t funct3)
 {
 	uint8_t offset = ( (funct3 == 5) * (EX_MEM.imm >> 5)  ); //this is only here to handle srai
-	return IIMM_MAP[funct3+offset](EX_MEM.A,EX_MEM.imm);
+	return IIMM_MAP[funct3 + (funct3 > 5) + offset](EX_MEM.A,EX_MEM.imm << 5 | EX_MEM.B);
 }
 static uint32_t iL_handler(){return LOAD_GENERAL(EX_MEM.A,EX_MEM.imm);}
 static uint32_t s_handler(){return STORE_GENERAL(EX_MEM.A,EX_MEM.imm);}
@@ -400,8 +402,12 @@ void WB()
 		}
 	}
 
+	NEXT_STATE.PC = MEM_WB.PC;
+
+	/*
 	INSTRUCTION_COUNT++;
 	if(INSTRUCTION_COUNT >= PROGRAM_SIZE) RUN_FLAG = FALSE;
+	*/
 }
 
 /************************************************************/
@@ -409,8 +415,7 @@ void WB()
 /************************************************************/
 void MEM()
 {
-	MEM_WB.IR = EX_MEM.IR;
-	MEM_WB.ALUOutput = EX_MEM.ALUOutput;
+	MEM_WB = EX_MEM;
 
 	//look in IR register to determine if instruction is load or store
 	switch(opcode_get(EX_MEM.IR)){
@@ -431,9 +436,10 @@ void MEM()
 /************************************************************/
 void EX()
 {
-	EX_MEM.IR = ID_IF.IR;
+	EX_MEM = ID_EX;
 
 	uint32_t opcode = opcode_get(EX_MEM.IR),funct3 = funct3_get(EX_MEM.IR);
+	EX_MEM.A = CURRENT_STATE.REGS[EX_MEM.A];
 	switch(opcode)
 	{
 		case(0x03):
@@ -446,6 +452,7 @@ void EX()
 			EX_MEM.ALUOutput = s_handler();
 			break;
 		case(0x33):
+			EX_MEM.B = CURRENT_STATE.REGS[EX_MEM.B];
 			EX_MEM.ALUOutput = r_handler(funct3,EX_MEM.imm);
 			break;
 		default:
@@ -458,13 +465,13 @@ void EX()
 /************************************************************/
 void ID()
 {
-	ID_IF.IR = IF_EX.IR;
+	ID_EX = IF_ID;
 	
-	uint32_t temp_inst = ID_IF.IR;
+	uint32_t temp_inst = IF_ID.IR;
 	
-	ID_IF.A = rs1_get(temp_inst);
-	ID_IF.B = rs2_get(temp_inst);
-	ID_IF.imm = funct7_get(temp_inst);
+	ID_EX.A = rs1_get(temp_inst);
+	ID_EX.B = rs2_get(temp_inst);
+	ID_EX.imm = funct7_get(temp_inst);
 
 	/*IMPLEMENT THIS*/
 }
@@ -475,8 +482,8 @@ void ID()
 void IF()
 {
 
-	IF_EX.IR = mem_read_32(CURRENT_STATE.PC);
-	IF_EX.PC = CURRENT_STATE.PC + 4;	
+	IF_ID.IR = mem_read_32(CURRENT_STATE.PC);
+	IF_ID.PC = CURRENT_STATE.PC + 4;	
 
 	/*IMPLEMENT THIS*/
 }
