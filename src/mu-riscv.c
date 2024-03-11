@@ -431,7 +431,7 @@ void MEM()
 /************************************************************/
 void EX()
 {
-	EX_MEM.IR = ID_IF.IR;
+	EX_MEM.IR = IF_ID.IR;
 
 	uint32_t opcode = opcode_get(EX_MEM.IR),funct3 = funct3_get(EX_MEM.IR);
 	switch(opcode)
@@ -459,13 +459,13 @@ void EX()
 /************************************************************/
 void ID()
 {
-	ID_IF.IR = IF_EX.IR;
+	ID_EX.IR = IF_ID.IR;
 	
-	uint32_t temp_inst = ID_IF.IR;
+	uint32_t temp_inst = IF_ID.IR;
 	
-	ID_IF.A = rs1_get(temp_inst);
-	ID_IF.B = rs2_get(temp_inst);
-	ID_IF.imm = funct7_get(temp_inst);
+	ID_EX.A = rs1_get(temp_inst);
+	ID_EX.B = rs2_get(temp_inst);
+	ID_EX.imm = funct7_get(temp_inst);
 
 	/*IMPLEMENT THIS*/
 }
@@ -475,11 +475,9 @@ void ID()
 /************************************************************/
 void IF()
 {
-	printf("%u\n",CURRENT_STATE.PC);
 
-	IF_EX.IR = mem_read_32(CURRENT_STATE.PC);
-	printf("%x\n",IF_EX.IR);
-	IF_EX.PC = CURRENT_STATE.PC + 4;	
+	IF_ID.IR = mem_read_32(CURRENT_STATE.PC);
+	IF_ID.PC = CURRENT_STATE.PC + 4;	
 
 	/*IMPLEMENT THIS*/
 }
