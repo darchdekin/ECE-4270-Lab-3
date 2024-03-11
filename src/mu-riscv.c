@@ -307,7 +307,6 @@ void load_program() {
 	fclose(fp);
 }
 
-
 #define R_ARGS uint32_t rs1, uint32_t rs2
 #define I_ARGS uint32_t rs1, int32_t imm
 #define S_ARGS uint32_t rs1, int32_t imm

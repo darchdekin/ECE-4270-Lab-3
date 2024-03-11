@@ -1,8 +1,11 @@
-#include <stdlib.h>
-#include <string.h>
-
 #include "print_inst.h"
 #include "riscv_utils.h"
+
+
+int digits(int number) {
+   	return number ? (int)(log10(number) + 1) : 0;
+}
+
 
 char* inst_to_string(uint32_t args){
 	uint8_t type = (uint8_t)(args & 0x3f);
@@ -78,15 +81,15 @@ char* R_print(uint32_t rd, uint32_t f3, uint32_t rs1,uint32_t rs2,uint32_t f7)
 		default:
 			return 0;
 	}
-    char inst[64];
-    strcat(inst, arg_string);
-    strcat(inst, " x");
-    strcat(inst, rd);
-    strcat(inst, " x");
-    strcat(inst, rs1);
-    strcat(inst, " x");
-    strcat(inst, rs2);
-	//printf("%s x%u x%u x%u\n",arg_string,rd,rs1,rs2);
+    char* inst = malloc(sizeof(char) * (strlen(arg_string) + digits(rd) + digits(rs1) + digits(rs2) + 7));
+    // strcat(inst, arg_string);
+    // strcat(inst, " x");
+    // strcat(inst, itoa(rd));
+    // strcat(inst, " x");
+    // strcat(inst, itoa(rs1));
+    // strcat(inst, " x");
+    // strcat(inst, itoa(rs2));
+	sprintf(inst, "%s x%u x%u x%u",arg_string,rd,rs1,rs2);
     return inst;
 	
 }
@@ -113,16 +116,16 @@ char* ILoad_print(uint32_t rd, uint32_t f3, uint32_t rs1, uint32_t imm) {
 	default:
 		return 0;
 	}
-	//printf("%s x%u %u(x%u)\n",arg_string,rd,imm,rs1);
-    char inst[64];
-    strcat(inst, arg_string);
-    strcat(inst, " x");
-    strcat(inst, rd);
-    strcat(inst, " ");
-    strcat(inst, imm);
-    strcat(inst, "(x");
-    strcat(inst, rs1);
-    strcat(inst, ")");
+    char* inst = malloc(sizeof(char) * (strlen(arg_string) + digits(rd) + digits(imm) + digits(rs1) + 7));
+    // strcat(inst, arg_string);
+    // strcat(inst, " x");
+    // strcat(inst, itoa(rd));
+    // strcat(inst, " ");
+    // strcat(inst, itoa(imm));
+    // strcat(inst, "(x");
+    // strcat(inst, itoa(rs1));
+    // strcat(inst, ")");
+    sprintf(inst, "%s x%u %u(x%u)",arg_string,rd,imm,rs1);
     return inst;
 }
 
@@ -181,15 +184,16 @@ char* Iimm_print(uint32_t rd, uint32_t f3, uint32_t rs1, uint32_t imm)
 	default:
 		return 0;
 	}
-	//printf("%s x%u x%u x%u\n",arg_string,rd,rs1,imm0_4);
-    char inst[64];
-    strcat(inst, arg_string);
-    strcat(inst, " x");
-    strcat(inst, rd);
-    strcat(inst, " x");
-    strcat(inst, rs1);
-    strcat(inst, " ");
-    strcat(inst, imm0_4);
+
+    char* inst = malloc(sizeof(char) * (strlen(arg_string) + digits(rd) + digits(rs1) + digits(imm0_4) + 6));
+    // strcat(inst, arg_string);
+    // strcat(inst, " x");
+    // strcat(inst, itoa(rd));
+    // strcat(inst, " x");
+    // strcat(inst, itoa(rs1));
+    // strcat(inst, " ");
+    // strcat(inst, itoa(imm0_4));
+    sprintf(inst, "%s x%u x%u %u",arg_string,rd,rs1,imm0_4);
     return inst;
 }
 
@@ -215,15 +219,17 @@ char* S_print(uint32_t imm4, uint32_t f3, uint32_t rs1, uint32_t rs2, uint32_t i
 	default:
 		return 0;
 	}
-	//printf("%s x%u %u(x%u)\n",arg_string,rs2,imm,rs1);
-    char inst[64];
-    strcat(inst, arg_string);
-    strcat(inst, " x");
-    strcat(inst, rs2);
-    strcat(inst, " ");
-    strcat(inst, imm);
-    strcat(inst, "(x");
-    strcat(inst, rs1);
-    strcat(inst, ")");
+
+    char* inst = malloc(sizeof(char) * (strlen(arg_string) + digits(rs2) + digits(imm) + digits(rs1) + 7));
+    // strcat(inst, arg_string);
+    // strcat(inst, " x");
+    // strcat(inst, itoa(rs2));
+    // strcat(inst, " ");
+    // strcat(inst, itoa(imm));
+    // strcat(inst, "(x");
+    // strcat(inst, itoa(rs1));
+    // strcat(inst, ")");
+
+    sprintf(inst, "%s x%u %u(x%u)",arg_string,rs2,imm,rs1);
     return inst;
 }
