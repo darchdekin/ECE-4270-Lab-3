@@ -71,7 +71,6 @@ void mem_write_32(uint32_t address, uint32_t value)
 /***************************************************************/
 void cycle() {
 	//printf("Cycle count: %d\n", CYCLE_COUNT);
-	NEXT_STATE.PC = CURRENT_STATE.PC + 4;
 	handle_pipeline();
 	CURRENT_STATE = NEXT_STATE;
 	CYCLE_COUNT++;
@@ -327,10 +326,7 @@ static inline uint32_t SLT(R_ARGS){return (rs1 < rs2);}
 static inline uint32_t SLU(R_ARGS){return (rs1 < rs2);}//TODO: zero extends, leaving for now similar to last one. I figure these little things can be one of the last things we do - Trevor
 
 //**************** I IMMEDIATE INSTRUCTIONS *****************
-static inline uint32_t ADDI(I_ARGS){
-	printf("addi args: %d %d\n", rs1, imm);
-	return rs1 + imm;
-	}
+static inline uint32_t ADDI(I_ARGS){return rs1 + imm;}
 static inline uint32_t XORI(I_ARGS){return rs1 ^ imm;}
 static inline uint32_t 	ORI(I_ARGS){return rs1 | imm;}
 static inline uint32_t ANDI(I_ARGS){return rs1 & imm;}
@@ -385,7 +381,6 @@ void WB()
 	int lmd = MEM_WB.LMD;
 	int alu = MEM_WB.ALUOutput;
 	int inst = MEM_WB.IR;
-	if(!inst) return; //there is no instruction
 	int opcode = opcode_get(inst);
 	int rd = rd_get(inst); //destination register
 
@@ -414,7 +409,7 @@ void WB()
 /************************************************************/
 void MEM()
 {
-	MEM_WB = EX_MEM;
+	MEM_WB.IR = EX_MEM.IR;
 	MEM_WB.ALUOutput = EX_MEM.ALUOutput;
 
 	//look in IR register to determine if instruction is load or store
@@ -436,7 +431,7 @@ void MEM()
 /************************************************************/
 void EX()
 {
-	EX_MEM = ID_EX;
+	EX_MEM.IR = ID_IF.IR;
 
 	uint32_t opcode = opcode_get(EX_MEM.IR),funct3 = funct3_get(EX_MEM.IR);
 	switch(opcode)
@@ -451,7 +446,7 @@ void EX()
 			EX_MEM.ALUOutput = s_handler();
 			break;
 		case(0x33):
-			EX_MEM.ALUOutput = r_handler(funct3,ID_EX.imm);
+			EX_MEM.ALUOutput = r_handler(funct3,EX_MEM.imm);
 			break;
 		default:
 			break;
@@ -463,17 +458,13 @@ void EX()
 /************************************************************/
 void ID()
 {
-	ID_EX = IF_ID;
+	ID_IF.IR = IF_EX.IR;
 	
-	uint32_t temp_inst = IF_ID.IR;
-
-	uint32_t rs = rs1_get(temp_inst);
-	uint32_t rt = rs2_get(temp_inst);
+	uint32_t temp_inst = ID_IF.IR;
 	
-	IF_ID.A = CURRENT_STATE.REGS[rs];
-	IF_ID.B = CURRENT_STATE.REGS[rt];
-	// "The lower 16 bits of the IR are sign-extended to 32-bit and stored in temporary register called imm."
-	IF_ID.imm = bigImm_get(temp_inst);
+	ID_IF.A = rs1_get(temp_inst);
+	ID_IF.B = rs2_get(temp_inst);
+	ID_IF.imm = funct7_get(temp_inst);
 
 	/*IMPLEMENT THIS*/
 }
@@ -483,9 +474,11 @@ void ID()
 /************************************************************/
 void IF()
 {
-	IF_ID.IR = mem_read_32(CURRENT_STATE.PC);
-	IF_ID.PC = CURRENT_STATE.PC + 4;	
 
+	IF_EX.IR = mem_read_32(CURRENT_STATE.PC);
+	IF_EX.PC = CURRENT_STATE.PC + 4;	
+
+	/*IMPLEMENT THIS*/
 }
 
 
@@ -518,23 +511,6 @@ void print_program(){
 /* Print the current pipeline                                                                                    */
 /************************************************************/
 void show_pipeline(){
-	printf("Current PC: %d\n\
-IF/ID.IR: %s\n\
-IF/ID.PC: %d\n\n\
-ID/EX.IR: %s \n\
-ID/EX.A: %d\n\
-ID/EX.B: %d\n\
-ID/EX.imm: %d\n\n\
-EX/MEM.IR: %s\n\
-EX/MEM.A: %d\n\
-EX/MEM.B: %d\n\
-EX/MEM.ALU: %d\n\n\
-MEM/WB.IR: %s\n\
-MEM/WB.ALUOutput: %d\n\n\
-MEM/WB.LMD: %x",
-	CURRENT_STATE.PC, inst_to_string(IF_ID.IR), IF_ID.PC, inst_to_string(ID_EX.IR), ID_EX.A, ID_EX.B, ID_EX.imm,
-	inst_to_string(EX_MEM.IR), EX_MEM.A, EX_MEM.B, EX_MEM.ALUOutput, inst_to_string(MEM_WB.IR), MEM_WB.ALUOutput, MEM_WB.LMD
-	);
 	/*IMPLEMENT THIS*/
 }
 
