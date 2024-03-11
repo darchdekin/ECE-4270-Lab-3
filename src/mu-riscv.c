@@ -451,6 +451,7 @@ void EX()
 		default:
 			break;
 	}
+	printf("%u\n",EX_MEM.ALUOutput);
 }
 
 /************************************************************/
@@ -474,8 +475,10 @@ void ID()
 /************************************************************/
 void IF()
 {
+	printf("%u\n",CURRENT_STATE.PC);
 
 	IF_EX.IR = mem_read_32(CURRENT_STATE.PC);
+	printf("%x\n",IF_EX.IR);
 	IF_EX.PC = CURRENT_STATE.PC + 4;	
 
 	/*IMPLEMENT THIS*/
