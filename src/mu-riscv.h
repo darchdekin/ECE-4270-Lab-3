@@ -71,7 +71,7 @@ uint32_t PROGRAM_SIZE; /*in words*/
 /* Pipeline Registers.                                                                                                        */
 /***************************************************************/
 CPU_Pipeline_Reg ID_IF;
-CPU_Pipeline_Reg IF_EX; //this is the id/ex regster
+CPU_Pipeline_Reg ID_EX;
 CPU_Pipeline_Reg EX_MEM;
 CPU_Pipeline_Reg MEM_WB;
 
