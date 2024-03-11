@@ -518,7 +518,22 @@ void print_program(){
 /* Print the current pipeline                                                                                    */
 /************************************************************/
 void show_pipeline(){
-	/*IMPLEMENT THIS*/
+		printf("Current PC: %d\n\
+IF/ID.IR: %s\n\
+IF/ID.PC: %d\n\n\
+ID/EX.IR: %s \n\
+ID/EX.A: %d\n\
+ID/EX.B: %d\n\
+ID/EX.imm: %d\n\n\
+EX/MEM.IR: %s\n\
+EX/MEM.A: %d\n\
+EX/MEM.B: %d\n\
+EX/MEM.ALU: %d\n\n\
+MEM/WB.IR: %s\n\
+MEM/WB.ALUOutput: %d\n\n\
+MEM/WB.LMD: %x",
+	CURRENT_STATE.PC, inst_to_string(IF_ID.IR), IF_ID.PC, inst_to_string(ID_EX.IR), ID_EX.A, ID_EX.B, ID_EX.imm,
+	inst_to_string(EX_MEM.IR), EX_MEM.A, EX_MEM.B, EX_MEM.ALUOutput, inst_to_string(MEM_WB.IR), MEM_WB.ALUOutput, MEM_WB.LMD);
 }
 
 /***************************************************************/
