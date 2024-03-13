@@ -473,7 +473,7 @@ void ID()
 	
 	ID_EX.A = rs1_get(temp_inst);
 	ID_EX.B = rs2_get(temp_inst);
-	ID_EX.imm = funct7_get(temp_inst);
+	ID_EX.imm = bigImm_get(temp_inst);
 
 	/*IMPLEMENT THIS*/
 }
@@ -483,11 +483,9 @@ void ID()
 /************************************************************/
 void IF()
 {
+	IF_ID.PC = CURRENT_STATE.PC;	
+	IF_ID.IR = mem_read_32(IF_ID.PC);
 
-	IF_ID.IR = mem_read_32(CURRENT_STATE.PC);
-	IF_ID.PC = CURRENT_STATE.PC + 4;	
-
-	/*IMPLEMENT THIS*/
 }
 
 

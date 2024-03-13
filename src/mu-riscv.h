@@ -48,8 +48,8 @@ typedef struct CPU_State_Struct {
 typedef struct CPU_Pipeline_Reg_Struct{
 	uint32_t PC;
 	uint32_t IR;
-	uint32_t A;
-	uint32_t B;
+	uint32_t A; //temporary register containing a value read from the register file
+	uint32_t B; //temporary register containing a value read from the register file
 	uint32_t imm;
 	uint32_t ALUOutput;
 	uint32_t LMD;
