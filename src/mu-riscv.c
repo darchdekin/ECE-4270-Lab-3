@@ -75,7 +75,7 @@ void cycle() {
 	handle_pipeline();
 	CURRENT_STATE = NEXT_STATE;
 	CYCLE_COUNT++;
-	if(CURRENT_STATE.PC > (PROGRAM_SIZE * 4) + MEM_TEXT_BEGIN) RUN_FLAG = false; 
+	//if(CURRENT_STATE.PC > (PROGRAM_SIZE * 4) + MEM_TEXT_BEGIN) RUN_FLAG = false;  //this line would end the program before the final instruction finished
 }
 
 /***************************************************************/
@@ -384,29 +384,28 @@ void WB()
 	int lmd = MEM_WB.LMD;
 	int alu = MEM_WB.ALUOutput;
 	int inst = MEM_WB.IR;
-	int opcode = opcode_get(inst);
-	int rd = rd_get(inst); //destination register
+	if(inst){ // do nothing if there is no instruction
+		int opcode = opcode_get(inst);
+		int rd = rd_get(inst); //destination register
 
-	switch(opcode){
-		case 51:{ //register-register instruction
-			
-			NEXT_STATE.REGS[rd] = alu;
-			break;
+		switch(opcode){
+			case 51:{ //register-register instruction
+				NEXT_STATE.REGS[rd] = alu;
+				break;
+			}
+			case 19:{ //register-immediate instruction
+				NEXT_STATE.REGS[rd] = alu;
+				break;
+			}
+			case 3:{ //load instruction
+				NEXT_STATE.REGS[rd] = lmd;
+				break;
+			}
 		}
-		case 19:{ //register-immediate instruction
-			NEXT_STATE.REGS[rd] = alu;
-			break;
-		}
-		case 3:{ //load instruction
-			NEXT_STATE.REGS[rd] = lmd;
-			break;
-		}
+
+		INSTRUCTION_COUNT++;
+		if(INSTRUCTION_COUNT >= PROGRAM_SIZE) RUN_FLAG = FALSE;
 	}
-
-	/*
-	INSTRUCTION_COUNT++;
-	if(INSTRUCTION_COUNT >= PROGRAM_SIZE) RUN_FLAG = FALSE;
-	*/
 }
 
 /************************************************************/
