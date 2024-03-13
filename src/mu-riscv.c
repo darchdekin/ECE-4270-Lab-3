@@ -145,7 +145,7 @@ void rdump() {
 	printf("[Register]\t[Value]\n");
 	printf("-------------------------------------\n");
 	for (i = 0; i < MIPS_REGS; i++){
-		printf("[R%d]\t: 0x%08x\n", i, CURRENT_STATE.REGS[i]);
+		printf("[R%d]\t: 0x%08x   [%d]\n", i, CURRENT_STATE.REGS[i], CURRENT_STATE.REGS[i]);
 	}
 	printf("-------------------------------------\n");
 	printf("[HI]\t: 0x%08x\n", CURRENT_STATE.HI);
@@ -355,7 +355,8 @@ static uint32_t r_handler(uint32_t funct3, uint32_t funct7){return R_MAP[funct3 
 static uint32_t iImm_handler(uint32_t funct3)
 {
 	uint8_t offset = ( (funct3 == 5) * (EX_MEM.imm >> 5)  ); //this is only here to handle srai
-	return IIMM_MAP[funct3 + (funct3 > 5) + offset](EX_MEM.A,EX_MEM.imm << 5 | EX_MEM.B);
+	//return IIMM_MAP[funct3 + (funct3 > 5) + offset](EX_MEM.A,EX_MEM.imm << 5 | EX_MEM.B); // ?
+	return IIMM_MAP[funct3 + (funct3 > 5) + offset](EX_MEM.A,EX_MEM.imm);
 }
 static uint32_t iL_handler(){return LOAD_GENERAL(EX_MEM.A,EX_MEM.imm);}
 static uint32_t s_handler(){return STORE_GENERAL(EX_MEM.A,EX_MEM.imm);}
@@ -471,8 +472,8 @@ void ID()
 	
 	uint32_t temp_inst = IF_ID.IR;
 	
-	ID_EX.A = rs1_get(temp_inst);
-	ID_EX.B = rs2_get(temp_inst);
+	ID_EX.A = CURRENT_STATE.REGS[rs1_get(temp_inst)]; 
+	ID_EX.B = CURRENT_STATE.REGS[rs2_get(temp_inst)];
 	ID_EX.imm = bigImm_get(temp_inst);
 
 	/*IMPLEMENT THIS*/
