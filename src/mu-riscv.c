@@ -71,11 +71,9 @@ void mem_write_32(uint32_t address, uint32_t value)
 /* Execute one cycle                                                                                                              */
 /***************************************************************/
 void cycle() {
-	NEXT_STATE.PC = CURRENT_STATE.PC + 4;
 	//printf("Cycle count: %d\n", CYCLE_COUNT);;
 	handle_pipeline();
 	CURRENT_STATE = NEXT_STATE;
-	
 	CYCLE_COUNT++;
 	if(CURRENT_STATE.PC > (PROGRAM_SIZE * 4) + MEM_TEXT_BEGIN) RUN_FLAG = false; 
 }
@@ -458,6 +456,10 @@ void EX()
 		default:
 			break;
 	}
+
+	// since there are no branch operations yet, we always increment the PC by 4.
+	// when we implement branches, we will use logic in the EX stage to determine NEXT_STATE.PC's value.
+	NEXT_STATE.PC = CURRENT_STATE.PC + 4;
 }
 
 /************************************************************/
