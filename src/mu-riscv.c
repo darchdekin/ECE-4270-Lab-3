@@ -436,7 +436,7 @@ void EX()
 {
 	EX_MEM = ID_EX;
 
-	uint32_t opcode = opcode_get(EX_MEM.IR),funct3 = funct3_get(EX_MEM.IR);
+	uint32_t opcode = opcode_get(EX_MEM.IR),funct3 = funct3_get(EX_MEM.IR), funct7 = funct7_get(EX_MEM.IR);
 	EX_MEM.A = CURRENT_STATE.REGS[EX_MEM.A];
 	switch(opcode)
 	{
@@ -449,9 +449,8 @@ void EX()
 		case(0x23):
 			EX_MEM.ALUOutput = s_handler();
 			break;
-		case(0x33):
-			EX_MEM.B = CURRENT_STATE.REGS[EX_MEM.B];
-			EX_MEM.ALUOutput = r_handler(funct3,EX_MEM.imm);
+		case(0x33): //register-register
+			EX_MEM.ALUOutput = r_handler(funct3, funct7);
 			break;
 		default:
 			break;
