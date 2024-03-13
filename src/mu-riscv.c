@@ -71,9 +71,11 @@ void mem_write_32(uint32_t address, uint32_t value)
 /* Execute one cycle                                                                                                              */
 /***************************************************************/
 void cycle() {
-	//printf("Cycle count: %d\n", CYCLE_COUNT);
+	NEXT_STATE.PC = CURRENT_STATE.PC + 4;
+	//printf("Cycle count: %d\n", CYCLE_COUNT);;
 	handle_pipeline();
 	CURRENT_STATE = NEXT_STATE;
+	
 	CYCLE_COUNT++;
 	if(CURRENT_STATE.PC > (PROGRAM_SIZE * 4) + MEM_TEXT_BEGIN) RUN_FLAG = false; 
 }
@@ -401,8 +403,6 @@ void WB()
 			break;
 		}
 	}
-
-	NEXT_STATE.PC = MEM_WB.PC;
 
 	/*
 	INSTRUCTION_COUNT++;
